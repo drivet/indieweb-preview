@@ -1,0 +1,39 @@
+{
+  "name": "indieweb-preview",
+  "version": "1.0.0",
+  "description": "An IndieWeb friendly link preview library",
+  "main": "dist/previews.js",
+  "types": "dist/previews.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/app.js",
+    "lint-fix": "npx eslint --fix",
+    "lint": "npx eslint",
+    "test": "jest"
+  },
+  "keywords": [
+    "indieweb"
+  ],
+  "author": "Desmond Rivet",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/clone": "^2.1.4",
+    "@types/node-fetch": "^2.6.13",
+    "eslint": "^9.39.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2"
+  },
+  "dependencies": {
+    "clone": "^2.1.2",
+    "mf2utiljs": "^1.1.0",
+    "unfurl.js": "^6.4.0"
+  }
+}
