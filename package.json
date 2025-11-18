@@ -1,6 +1,6 @@
 {
   "name": "indieweb-preview",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An IndieWeb friendly link preview library",
   "main": "dist/previews.js",
   "types": "dist/previews.d.ts",
