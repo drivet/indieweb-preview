@@ -6,6 +6,7 @@ import {
   SimplifiedEntry,
 } from "mf2utiljs";
 import { unfurl } from "unfurl.js";
+import fetch from 'node-fetch';
 
 export type Metadata = Awaited<ReturnType<typeof unfurl>>;
 export interface Image {
@@ -32,6 +33,19 @@ interface MetadataAndMf2 {
   url: string;
   mf2?: SimplifiedEntry;
   metadata?: Metadata;
+}
+
+async function isImageUrl(url: string): Promise<boolean> {
+  if (!url.startsWith("http")) {
+     return false;
+  }
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    const contentType = res.headers.get('content-type');
+    return !!contentType && contentType.startsWith('image/');
+  } catch(e) {
+    return false;
+  }
 }
 
 function truncate(str: string, chars: number, replace = "...") {
@@ -62,6 +76,16 @@ function extractPicture(meta: SimplifiedEntry): Image | undefined {
   }
 }
 
+async function cleanAuthorInfo(author: AuthorInfo | undefined): Promise<AuthorInfo | undefined> {
+  if (author && author.photo) {
+    const isImage = await isImageUrl(author.photo);
+    if (!isImage) {
+      author.photo = undefined;
+    }
+  }
+  return author;
+}
+
 async function scrape(url: string): Promise<MetadataAndMf2 | null> {
   try {
     const parsed = await parse_mf2(url);
@@ -86,10 +110,18 @@ async function scrape(url: string): Promise<MetadataAndMf2 | null> {
   }
 }
 
-function extractSiteInfo(url: string, md: Metadata): SiteInfo | undefined {
+async function extractSiteInfo(url: string, md: Metadata): Promise<SiteInfo | undefined> {
   const u = new URL(url);
   const name = md.open_graph?.site_name || md.twitter_card?.site || u.hostname;
   const siteUrl = u.origin;
+
+  // favicons are often missing so check here
+  if (md.favicon) {
+    const isImage = await isImageUrl(md.favicon);
+    if (!isImage) {
+      md.favicon = undefined;
+    }
+  }
   const icon = md.favicon;
 
   return {
@@ -112,7 +144,7 @@ export async function preview(url: string): Promise<Preview | null> {
       description: extractSummary(mf2),
       image: extractPicture(mf2),
       published: mf2.published,
-      author: mf2.author,
+      author: await cleanAuthorInfo(mf2.author),
     };
 
     if (mf2Data.title || mf2Data.description || mf2Data.image || 
@@ -122,7 +154,7 @@ export async function preview(url: string): Promise<Preview | null> {
         ...mf2Data,
         // microformats/indieweb doesn't define site info, so fall back to OG metadata
         site: scraped.metadata
-          ? extractSiteInfo(url, scraped.metadata)
+          ? await extractSiteInfo(url, scraped.metadata)
           : undefined,
       };
     }
@@ -141,7 +173,7 @@ export async function preview(url: string): Promise<Preview | null> {
       md.twitter_card?.description ||
       md.description,
     image: (md.open_graph?.images || md.twitter_card?.images || [])[0],
-    site: extractSiteInfo(url, md),
+    site: await extractSiteInfo(url, md),
     author: md.open_graph?.article?.author
       ? { name: md.open_graph?.article?.author }
       : undefined,

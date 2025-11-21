@@ -1,6 +1,6 @@
 {
   "name": "indieweb-preview",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An IndieWeb friendly link preview library",
   "main": "dist/previews.js",
   "types": "dist/previews.d.ts",
@@ -34,6 +34,7 @@
   "dependencies": {
     "clone": "^2.1.2",
     "mf2utiljs": "^1.1.0",
+    "node-fetch": "^3.3.2",
     "unfurl.js": "^6.4.0"
   }
 }
